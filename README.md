@@ -1,5 +1,11 @@
 # FiveM key binds
-Standalone, free to use, no license
+- Standalone
+- free to use
+- no license
+
+# Before using
+I recommend setting the values of the buttons you don't use to false (keybinds/client.lua:1 && keybinds/client.lua:65)
+
 
 # Usage
 ```lua
