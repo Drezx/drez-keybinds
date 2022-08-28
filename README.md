@@ -5,34 +5,28 @@
 
 # Usage
 ```lua
-exports['keybinds']:AddBind(key, onPressFunction, onReleaseFunction)
+exports['keybinds']:AddBind(key, onPressFunction, hold?)
 ```
 
 # Example
 ```lua
--- With press only
-exports['keybinds']:AddBind('H', function()
-    print('H pressed!')
+-- Mouse press
+AddBind("MOUSE_RIGHT", function()
+    print("Right mouse button pressed")
 end)
 
--- With press & release
-local Pressing = false
-exports['keybinds']:AddBind('Z', function()
-    Pressing = true
+-- Keyboard Press
+AddBind("H", function()
+    print("H pressed")
+end)
 
-    while Pressing do
+-- Hold
+AddBind("Z", function(InputActive)
+    while InputActive() do
         Citizen.Wait(0)
-        print("Pressing Z key")
+        print("Z hold")
     end
-
-end, function()
-    Pressing = false
-end)
-
--- And for Mouse Button
-exports['keybinds']:AddBind('MOUSE_LEFT', function()
-    print('Left mouse button')
-end)
+end, true)
 ```
 
 # Before using
