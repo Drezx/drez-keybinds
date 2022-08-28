@@ -74,7 +74,9 @@ local MouseButtons = {
 
 }
 
+local ReleaseFunction = {}
 local InputEvents = {}
+
 
 function AddBind(key, onPress, onRelease)
 	if KeyboardKeys[key] or MouseButtons[key] then
@@ -94,7 +96,18 @@ for k,v in pairs(KeyboardKeys) do
             for i=1, #InputEvents do
                 if (InputEvents[i].key == k) then
                     Citizen.CreateThread(function()
-                        InputEvents[i].onPress()
+						local InputID;
+						if InputEvents[i].onRelease == true then
+							InputID = #ReleaseFunction + 1
+							ReleaseFunction[InputID] = {key = k, event = InputEvents[i].onPress}
+						end
+
+                        InputEvents[i].onPress(InputID ~= nil and (
+							function()
+								return ReleaseFunction[InputID] ~= nil and true or false
+							end
+						) or nil)
+
                         TerminateThread(GetIdOfThisThread())
                     end)
                 end
@@ -104,11 +117,13 @@ for k,v in pairs(KeyboardKeys) do
         RegisterCommand('-bind_' .. k, function()
             for i=1, #InputEvents do
                 if (InputEvents[i].key == k) then
-                    if (InputEvents[i].onRelease ~= nil) then
-                        Citizen.CreateThread(function()
-                            InputEvents[i].onRelease()
-                            TerminateThread(GetIdOfThisThread())
-                        end)
+                    if (InputEvents[i].onRelease == true) then
+						for key, sdat in pairs(ReleaseFunction) do
+							if key and (k == sdat.key and InputEvents[i].onPress == sdat.event) then
+								table.remove(ReleaseFunction, key)
+								break
+							end
+						end
                     end
                 end
             end
@@ -124,7 +139,18 @@ for k,v in pairs(MouseButtons) do
             for i=1, #InputEvents do
                 if (InputEvents[i].key == k) then
                     Citizen.CreateThread(function()
-                        InputEvents[i].onPress()
+						local InputID;
+						if InputEvents[i].onRelease == true then
+							InputID = #ReleaseFunction + 1
+							ReleaseFunction[InputID] = {key = k, event = InputEvents[i].onPress}
+						end
+
+                        InputEvents[i].onPress(InputID ~= nil and (
+							function()
+								return ReleaseFunction[InputID] ~= nil and true or false
+							end
+						) or nil)
+
                         TerminateThread(GetIdOfThisThread())
                     end)
                 end
@@ -134,11 +160,13 @@ for k,v in pairs(MouseButtons) do
         RegisterCommand('-bind_' .. k, function()
             for i=1, #InputEvents do
                 if (InputEvents[i].key == k) then
-                    if (InputEvents[i].onRelease ~= nil) then
-                        Citizen.CreateThread(function()
-                            InputEvents[i].onRelease()
-                            TerminateThread(GetIdOfThisThread())
-                        end)
+                    if (InputEvents[i].onRelease == true) then
+						for key, sdat in pairs(ReleaseFunction) do
+							if key and (k == sdat.key and InputEvents[i].onPress == sdat.event) then
+								table.remove(ReleaseFunction, key)
+								break
+							end
+						end
                     end
                 end
             end
