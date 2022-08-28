@@ -11,17 +11,17 @@ exports['keybinds']:AddBind(key, onPressFunction, hold?)
 # Example
 ```lua
 -- Mouse press
-AddBind("MOUSE_RIGHT", function()
+exports['keybinds']:AddBind("MOUSE_RIGHT", function()
     print("Right mouse button pressed")
 end)
 
 -- Keyboard Press
-AddBind("H", function()
+exports['keybinds']:AddBind("H", function()
     print("H pressed")
 end)
 
 -- Hold
-AddBind("Z", function(InputActive)
+exports['keybinds']:AddBind("Z", function(InputActive)
     while InputActive() do
         Citizen.Wait(0)
         print("Z hold")
