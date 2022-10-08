@@ -78,15 +78,51 @@ local ReleaseFunction = {}
 local InputEvents = {}
 
 
+local function IsRegistered(key, index, resource)
+	local name = index:gsub(resource .. ":", "")
+	local a, j = name:find(":")
+	local fin = name:sub(a + 1, #name)
+
+	for k,v in ipairs(InputEvents) do
+		if (key == v.key) then
+			local name2 = v.onPress.__cfx_functionReference
+			if name2:find(resource) then
+				local namesub = name2:gsub(resource .. ":", "")
+				local az, jz = namesub:find(":")
+				local finz = namesub:sub(az + 1, #namesub)
+				if (tostring(finz) == tostring(fin)) then
+					return k, finz
+				end
+			end
+			
+		end
+	end
+	
+	return false
+end
+
 function AddBind(key, onPress, onRelease)
 	if KeyboardKeys[key] or MouseButtons[key] then
-		table.insert(InputEvents, {
-			key = key,
-			onPress = onPress,
-			onRelease = onRelease,
-		})
+		local _functionIndex = onPress.__cfx_functionReference
+		local bindExist, functionIndex = IsRegistered(key, _functionIndex, GetInvokingResource())
+
+		if not bindExist then
+			table.insert(InputEvents, {
+				key = key,
+				onPress = onPress,
+				onRelease = onRelease,
+			})
+		else
+			InputEvents[tonumber(bindExist)] = {
+				key = key,
+				onPress = onPress,
+				onRelease = onRelease,
+			}
+
+			print("^3Bind ^5[" .. functionIndex .. "_" .. GetInvokingResource() .. ": " .. key .. "]^3 already exist, ^2function overwrited")
+		end
 	else
-		print('^1Cannot register bind for ^3[' .. key .. ']^1, key is invalid or disabled^0')
+		print('^1Cannot register bind for ^3[' .. GetInvokingResource() .. ": " .. key .. ']^1, key is invalid or disabled^0')
 	end
 end
 
@@ -95,20 +131,19 @@ for k,v in pairs(KeyboardKeys) do
         RegisterCommand('+bind_' .. k, function()
             for i=1, #InputEvents do
                 if (InputEvents[i].key == k) then
-                    Citizen.CreateThread(function()
-						local InputID;
+                    CreateThread(function()
+						local InputID = -1;
 						if InputEvents[i].onRelease == true then
 							InputID = #ReleaseFunction + 1
-							ReleaseFunction[InputID] = {key = k, event = InputEvents[i].onPress}
+							ReleaseFunction[tonumber(InputID)] = {key = k, event = InputEvents[i].onPress}
 						end
-
-                        InputEvents[i].onPress(InputID ~= nil and (
+                        InputEvents[i].onPress(
 							function()
-								return ReleaseFunction[InputID] ~= nil and true or false
+								return ReleaseFunction[tonumber(InputID)] ~= nil and true or false
 							end
-						) or nil)
-
-                        TerminateThread(GetIdOfThisThread())
+						)
+				
+                        TerminateThisThread()
                     end)
                 end
             end
@@ -138,20 +173,20 @@ for k,v in pairs(MouseButtons) do
         RegisterCommand('+bind_' .. k, function()
             for i=1, #InputEvents do
                 if (InputEvents[i].key == k) then
-                    Citizen.CreateThread(function()
-						local InputID;
+                    CreateThread(function()
+						local InputID = -1;
 						if InputEvents[i].onRelease == true then
 							InputID = #ReleaseFunction + 1
-							ReleaseFunction[InputID] = {key = k, event = InputEvents[i].onPress}
+							ReleaseFunction[tonumber(InputID)] = {key = k, event = InputEvents[i].onPress}
 						end
 
-                        InputEvents[i].onPress(InputID ~= nil and (
+                        InputEvents[i].onPress(
 							function()
-								return ReleaseFunction[InputID] ~= nil and true or false
+								return ReleaseFunction[tonumber(InputID)] ~= nil and true or false
 							end
-						) or nil)
+						)
 
-                        TerminateThread(GetIdOfThisThread())
+						TerminateThisThread()
                     end)
                 end
             end
