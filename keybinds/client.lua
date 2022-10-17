@@ -79,50 +79,71 @@ local InputEvents = {}
 
 
 local function IsRegistered(key, index, resource)
-	local name = index:gsub(resource .. ":", "")
-	local a, j = name:find(":")
-	local fin = name:sub(a + 1, #name)
+    if (type(index) == "function") then
+        local thisIndex = tostring(index)
+        local pointer = thisIndex:sub(thisIndex:len() - 3, thisIndex:len())
 
-	for k,v in ipairs(InputEvents) do
-		if (key == v.key) then
-			local name2 = v.onPress.__cfx_functionReference
-			if name2:find(resource) then
-				local namesub = name2:gsub(resource .. ":", "")
-				local az, jz = namesub:find(":")
-				local finz = namesub:sub(az + 1, #namesub)
-				if (tostring(finz) == tostring(fin)) then
-					return k, finz
-				end
-			end
-			
-		end
-	end
-	
-	return false
+        for k,v in pairs(InputEvents) do
+            if (key == v.key) then
+                local inIndex = tostring(v.onPress)
+                local inPointer = inIndex:sub(inIndex:len() - 3, inIndex:len())
+                
+                if (inPointer == pointer) then
+                    return k
+                end
+            end
+        end
+    elseif (type(index) == "table") then
+        local strIndex = tostring(index.__cfx_functionReference)
+        local name = strIndex:gsub(resource .. ":", "")
+        local a, j = name:find(":")
+        local fin = name:sub(a + 1, #name)
+
+        for k,v in ipairs(InputEvents) do
+            if (key == v.key) then
+                if (type(v.onPress) == "table") then
+                    local name2 = v.onPress.__cfx_functionReference
+                    if name2:find(resource) then
+                        local namesub = name2:gsub(resource .. ":", "")
+                        local az, jz = namesub:find(":")
+                        local finz = namesub:sub(az + 1, #namesub)
+                        if (tostring(finz) == tostring(fin)) then
+                            return k
+                        end
+                    end
+                end
+                
+            end
+        end
+
+    end
+
+    
+    return false
 end
+
 
 function AddBind(key, onPress, onRelease)
 	if KeyboardKeys[key] or MouseButtons[key] then
-		local _functionIndex = onPress.__cfx_functionReference
-		local bindExist, functionIndex = IsRegistered(key, _functionIndex, GetInvokingResource())
-
-		if not bindExist then
+		local bindExist = IsRegistered(key, onPress, GetInvokingResource())
+        
+		if bindExist == false then
 			table.insert(InputEvents, {
 				key = key,
 				onPress = onPress,
 				onRelease = onRelease,
 			})
 		else
-			InputEvents[tonumber(bindExist)] = {
+			InputEvents[bindExist] = {
 				key = key,
 				onPress = onPress,
 				onRelease = onRelease,
 			}
 
-			print("^3Bind ^5[" .. functionIndex .. "_" .. GetInvokingResource() .. ": " .. key .. "]^3 already exist, ^2function overwrited")
+			print("^3Bind ^5[" .. (GetInvokingResource() or GetCurrentResourceName()) .. "_" .. bindExist .. "_" .. key .. "]^3 already exist, ^2function overwrited")
 		end
 	else
-		print('^1Cannot register bind for ^3[' .. GetInvokingResource() .. ": " .. key .. ']^1, key is invalid or disabled^0')
+		print('^1Cannot register bind for ^3[' .. (GetInvokingResource() or GetCurrentResourceName()) .. ": " .. key .. ']^1, key is invalid or disabled^0')
 	end
 end
 
