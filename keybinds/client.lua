@@ -164,7 +164,7 @@ for k,v in pairs(KeyboardKeys) do
 							end
 						)
 				
-                        TerminateThisThread()
+                        TerminateThread(GetIdOfThisThread())
                     end)
                 end
             end
@@ -207,7 +207,7 @@ for k,v in pairs(MouseButtons) do
 							end
 						)
 
-						TerminateThisThread()
+						TerminateThread(GetIdOfThisThread())
                     end)
                 end
             end
