@@ -1,32 +1,50 @@
 # FiveM key binds
 - Standalone
-- free to use
-- no license
+- easy to use
+
+# Performance
+- Idle: 0.00ms
+- Press: 0.00-0.01ms
+- Hold: 0.01ms
 
 # Usage
+- manifest file link
 ```lua
-exports['keybinds']:AddBind(key, onPressFunction, hold?)
+    client_script "@keybinds/lib.lua"
+```
+- Using bind
+```lua
+    AddBind(key, function)
+```
+- Disable key, like DisableControlAction
+```lua
+    exports["keybinds"]:AddBindRestriction(keys, state)
 ```
 
 # Example
 ```lua
 -- Mouse press
-exports['keybinds']:AddBind("MOUSE_RIGHT", function()
-    print("Right mouse button pressed")
+AddBind("MOUSE_RIGHT", function()
+    print("Right mouse")
 end)
 
--- Keyboard Press
-exports['keybinds']:AddBind("H", function()
+-- Keyboard press
+AddBind("H", function()
     print("H pressed")
 end)
 
 -- Hold
-exports['keybinds']:AddBind("Z", function(InputActive)
+AddBind("Z", function(InputActive)
     while InputActive() do
-        Citizen.Wait(0)
-        print("Z hold")
+        Wait(0)
+        print("Z holding")
     end
-end, true)
+end)
+
+-- Disable Z and H keys for 3 seconds
+exports["keybinds"]:AddBindRestriction({"Z", "H"}, true)
+Wait(3000)
+exports["keybinds"]:AddBindRestriction({"Z", "H"}, false)
 ```
 
 # Before using
