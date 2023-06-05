@@ -48,12 +48,6 @@ exports["keybinds"]:AddBindRestriction({"Z", "H"}, false)
 ```
 
 # Before using
-I recommend setting the values of the buttons you don't use to false 
-- keybinds/client.lua:1
-
-![carbon (4)](https://user-images.githubusercontent.com/65835815/183501188-c417c35d-7c9f-4dac-be37-eea51413b37d.png)
-- keybinds/client.lua:65
-
-![carbon (3)](https://user-images.githubusercontent.com/65835815/183501198-cf4b6abd-273a-493a-acc8-90f4b9a446b0.png)
-
-
+I recommend setting the values of the buttons you don't use to false, in example you have enabled WSAD keys and you are not using them it can cause some client latency
+- [For keyboard](https://github.com/Drezx/drez-keybinds/blob/9df659fc424907a35a866cdac66943818cfb737e/keybinds/client.lua#L2)
+- [For mouse](https://github.com/Drezx/drez-keybinds/blob/9df659fc424907a35a866cdac66943818cfb737e/keybinds/client.lua#LL77C1-L77C1)
