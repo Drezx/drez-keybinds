@@ -1,6 +1,7 @@
+local Restricted = {}
 local KeyboardKeys = {
-	['Q'] = true, -- used
-	['W'] = false, -- not used
+	['Q'] = true,
+	['W'] = false,
 	['E'] = true,
 	['R'] = true,
 	['T'] = true,
@@ -12,16 +13,16 @@ local KeyboardKeys = {
 	['A'] = false,
 	['S'] = false,
 	['D'] = false,
-	['F'] = true,
-	['G'] = true,
+	['F'] = false,
+	['G'] = false,
 	['H'] = true,
-	['J'] = true,
+	['J'] = false,
 	['K'] = true,
 	['L'] = true,
 	['Z'] = true,
 	['X'] = true,
-	['C'] = true,
-	['V'] = true,
+	['C'] = false,
+	['V'] = false,
 	['B'] = true,
 	['N'] = true,
 	['M'] = true,
@@ -32,40 +33,51 @@ local KeyboardKeys = {
 	['F5'] = true,
 	['F6'] = true,
 	['F7'] = true,
-	['F8'] = true,
+	['F8'] = false,
 	['F9'] = true,
 	['F10'] = true,
-	['F11'] = true,
-	['F12'] = true,
+	['F11'] = false,
+	['F12'] = false,
 	['1'] = true, 
 	['2'] = true, 
 	['3'] = true, 
 	['4'] = true, 
 	['5'] = true, 
 	['6'] = true, 
-	['7'] = true, 
-	['8'] = true, 
-	['9'] = true, 
-	['0'] = true,
-    ['OEM_3'] = true, -- `~
-    ['TAB'] = true,
+	['7'] = false, 
+	['8'] = false, 
+	['9'] = false, 
+	['0'] = false,
+    ['CAPITAL'] = true, -- capslock
+    ['OEM_3'] = false, -- `~
+    ['OEM_4'] = true, -- [
+    ['OEM_6'] = true, -- ]
+    ['TAB'] = false,
     ['RETURN'] = true, -- ENTER
     ['ESCAPE'] = true, -- ESC
-    ['SPACE'] = true,
+    ['SPACE'] = false,
     ['PAGEUP'] = true,
     ['PAGEDOWN'] = true,
     ['INSERT'] = true,
     ['DELETE'] = true,
-    ['PLUS'] = false, -- +
+    ['HOME'] = true,
+	['BACK'] = true,
+	['UP'] = true,
+	['DOWN'] = true,
+	['RIGHT'] = true,
+	['LEFT'] = true,
+    ['PLUS'] = true, -- +
     ['MINUS'] = false, -- -
-    -- All buttons: https://docs.fivem.net/docs/game-references/input-mapper-parameter-ids/keyboard/
+    ['LCONTROL'] = true,
+    ['LMENU'] = true,
 
+    -- more here: https://docs.fivem.net/docs/game-references/input-mapper-parameter-ids/keyboard/
 }
 
 local MouseButtons = {
-    ['MOUSE_LEFT'] = false,
+    ['MOUSE_LEFT'] = true,
     ['MOUSE_RIGHT'] = true,
-    ['MOUSE_MIDDLE'] = true,
+    ['MOUSE_MIDDLE'] = false,
     ['MOUSE_EXTRABTN1'] = false, -- Mouse button 3
     ['MOUSE_EXTRABTN2'] = false, -- Mouse button 4
     ['MOUSE_EXTRABTN3'] = false, -- Mouse button 5
@@ -74,161 +86,56 @@ local MouseButtons = {
 
 }
 
-local ReleaseFunction = {}
-local InputEvents = {}
+
+RegisterNetEvent("keybinds:start")
+RegisterNetEvent("keybinds:end")
 
 
-local function IsRegistered(key, index, resource)
-    if (type(index) == "function") then
-        local thisIndex = tostring(index)
-        local pointer = thisIndex:sub(thisIndex:len() - 3, thisIndex:len())
-
-        for k,v in pairs(InputEvents) do
-            if (key == v.key) then
-                local inIndex = tostring(v.onPress)
-                local inPointer = inIndex:sub(inIndex:len() - 3, inIndex:len())
-                
-                if (inPointer == pointer) then
-                    return k
-                end
-            end
+CreateThread(function()
+    for key, enable in pairs(KeyboardKeys) do
+        if enable then
+            RegisterCommand('+bindk_' .. key, function()
+                if Restricted[key] then return end
+                TriggerEvent("keybinds:start", key)
+            end)
+    
+            RegisterCommand('-bindk_' .. key, function()
+                if Restricted[key] then return end
+                TriggerEvent("keybinds:end", key)
+            end)
+    
+            RegisterKeyMapping('+bindk_' .. key, 'Key binding ' .. key, 'keyboard', key)
         end
-    elseif (type(index) == "table") then
-        local strIndex = tostring(index.__cfx_functionReference)
-        local name = strIndex:gsub(resource .. ":", "")
-        local a, j = name:find(":")
-        local fin = name:sub(a + 1, #name)
-
-        for k,v in ipairs(InputEvents) do
-            if (key == v.key) then
-                if (type(v.onPress) == "table") then
-                    local name2 = v.onPress.__cfx_functionReference
-                    if name2:find(resource) then
-                        local namesub = name2:gsub(resource .. ":", "")
-                        local az, jz = namesub:find(":")
-                        local finz = namesub:sub(az + 1, #namesub)
-                        if (tostring(finz) == tostring(fin)) then
-                            return k
-                        end
-                    end
-                end
-                
-            end
+    end
+    
+    for key, enable in pairs(MouseButtons) do
+        if enable then
+            RegisterCommand('+bindm_' .. key, function()
+                if Restricted[key] then return end
+                TriggerEvent("keybinds:start", key)
+            end)
+    
+            RegisterCommand('-bindm_' .. key, function()
+                if Restricted[key] then return end
+                TriggerEvent("keybinds:end", key)
+            end)
+    
+            RegisterKeyMapping('+bindm_' .. key, "Key binding " .. key, "MOUSE_BUTTON", key)
         end
+    end
+end)
 
+
+function CanRegister(key)
+    if KeyboardKeys[key] or MouseButtons[key] then
+        return true
     end
 
-    
     return false
 end
 
-
-function AddBind(key, onPress, onRelease)
-	if KeyboardKeys[key] or MouseButtons[key] then
-		local bindExist = IsRegistered(key, onPress, GetInvokingResource())
-        
-		if bindExist == false then
-			table.insert(InputEvents, {
-				key = key,
-				onPress = onPress,
-				onRelease = onRelease,
-			})
-		else
-			InputEvents[bindExist] = {
-				key = key,
-				onPress = onPress,
-				onRelease = onRelease,
-			}
-
-			print("^3Bind ^5[" .. (GetInvokingResource() or GetCurrentResourceName()) .. "_" .. bindExist .. "_" .. key .. "]^3 already exist, ^2function overwrited")
-		end
-	else
-		print('^1Cannot register bind for ^3[' .. (GetInvokingResource() or GetCurrentResourceName()) .. ": " .. key .. ']^1, key is invalid or disabled^0')
-	end
-end
-
-for k,v in pairs(KeyboardKeys) do
-    if v then
-        RegisterCommand('+bind_' .. k, function()
-            for i=1, #InputEvents do
-                if (InputEvents[i].key == k) then
-                    CreateThread(function()
-						local InputID = -1;
-						if InputEvents[i].onRelease == true then
-							InputID = #ReleaseFunction + 1
-							ReleaseFunction[tonumber(InputID)] = {key = k, event = InputEvents[i].onPress}
-						end
-                        InputEvents[i].onPress(
-							function()
-								return ReleaseFunction[tonumber(InputID)] ~= nil and true or false
-							end
-						)
-				
-                        return
-                    end)
-                end
-            end
-        end)
-
-        RegisterCommand('-bind_' .. k, function()
-            for i=1, #InputEvents do
-                if (InputEvents[i].key == k) then
-                    if (InputEvents[i].onRelease == true) then
-						for key, sdat in pairs(ReleaseFunction) do
-							if key and (k == sdat.key and InputEvents[i].onPress == sdat.event) then
-								table.remove(ReleaseFunction, key)
-								break
-							end
-						end
-                    end
-                end
-            end
-        end)
-
-        RegisterKeyMapping('+bind_' .. k, 'Key bind','keyboard', k)
-    end
-end
-
-for k,v in pairs(MouseButtons) do
-    if v then
-        RegisterCommand('+bind_' .. k, function()
-            for i=1, #InputEvents do
-                if (InputEvents[i].key == k) then
-                    CreateThread(function()
-						local InputID = -1;
-						if InputEvents[i].onRelease == true then
-							InputID = #ReleaseFunction + 1
-							ReleaseFunction[tonumber(InputID)] = {key = k, event = InputEvents[i].onPress}
-						end
-
-                        InputEvents[i].onPress(
-							function()
-								return ReleaseFunction[tonumber(InputID)] ~= nil and true or false
-							end
-						)
-
-						return
-                    end)
-                end
-            end
-        end)
-
-        RegisterCommand('-bind_' .. k, function()
-            for i=1, #InputEvents do
-                if (InputEvents[i].key == k) then
-                    if (InputEvents[i].onRelease == true) then
-						for key, sdat in pairs(ReleaseFunction) do
-							if key and (k == sdat.key and InputEvents[i].onPress == sdat.event) then
-								table.remove(ReleaseFunction, key)
-								break
-							end
-						end
-                    end
-                end
-            end
-        end)
-
-
-        RegisterKeyMapping('+bind_' .. k, "Mouse Bind", "MOUSE_BUTTON", k)
+function AddBindRestriction(keys, state)
+    for i=1, #keys do
+        Restricted[keys[i]] = state
     end
 end
