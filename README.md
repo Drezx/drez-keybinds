@@ -10,15 +10,20 @@
 # Usage
 - manifest file link
 ```lua
-    client_script "@keybinds/lib.lua"
+    client_script "@drez-keybinds/lib.lua"
 ```
+or use dynamic link
+```lua
+    load(exports['drez-keybinds']:Init(), "keybinds")()
+```
+
 - Using bind
 ```lua
     AddBind(key, function)
 ```
 - Disable key, like DisableControlAction
 ```lua
-    exports["keybinds"]:AddBindRestriction(keys, state)
+    AddBindRestriction(keys, state)
 ```
 
 # Example
@@ -42,12 +47,7 @@ AddBind("Z", function(InputActive)
 end)
 
 -- Disable Z and H keys for 3 seconds
-exports["keybinds"]:AddBindRestriction({"Z", "H"}, true)
+AddBindRestriction({"Z", "H"}, true)
 Wait(3000)
-exports["keybinds"]:AddBindRestriction({"Z", "H"}, false)
+AddBindRestriction({"Z", "H"}, false)
 ```
-
-# Before using
-I recommend setting the values of the buttons you don't use to false, in example you have enabled WSAD keys and you are not using them it can cause some client latency
-- [For keyboard](https://github.com/Drezx/drez-keybinds/blob/9df659fc424907a35a866cdac66943818cfb737e/keybinds/client.lua#L2)
-- [For mouse](https://github.com/Drezx/drez-keybinds/blob/9df659fc424907a35a866cdac66943818cfb737e/keybinds/client.lua#LL77C1-L77C1)
